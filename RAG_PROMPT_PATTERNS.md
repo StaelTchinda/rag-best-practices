@@ -1,45 +1,57 @@
 # Prompt Engineering for RAG
 
-A structured reference to the patterns in [RAG_PROMPT_PATTERNS.txt](./RAG_PROMPT_PATTERNS.txt). The pattern prompts and examples below retain the source wording; the problem, approach, and use notes organize the material for reference.
+This guide organizes the core prompt patterns used in retrieval-augmented generation into a practical reference for real systems. It keeps the original source wording where useful, but frames each pattern by the problem it addresses, the way it works, and the situations where it is most helpful. Use it as a quick decision guide when you need to improve grounding, verifiability, structure, or domain fit in a RAG application.
 
 ## Contents
 
 - [At a glance](#at-a-glance)
-- [Pattern 1: Strictly Grounded Generation](#pattern-1-strictly-grounded-generation)
-- [Pattern 2: Expert Persona Assignment](#pattern-2-expert-persona-assignment)
-- [Pattern 3: Structured Output Formatting](#pattern-3-structured-output-formatting)
-- [Pattern 4: Chain-of-Thought for Complex Questions](#pattern-4-chain-of-thought-for-complex-questions)
-- [Handling Real-World Complexity: Edge Cases and Conflicts](#handling-real-world-complexity-edge-cases-and-conflicts)
-- [The Citation Imperative: Enforcing Verifiability](#the-citation-imperative-enforcing-verifiability)
-- [Domain-Specific Prompt Patterns](#domain-specific-prompt-patterns)
-- [Advanced Technique: Prompt Compression and Context Management](#advanced-technique-prompt-compression-and-context-management)
-- [Testing and Iteration: Making Your Prompts Better](#testing-and-iteration-making-your-prompts-better)
-- [Complete RAG Prompt Template](#complete-rag-prompt-template)
-- [Real-World Example: Customer Support RAG](#real-world-example-customer-support-rag)
+- [Patterns](#patterns)
+  - [Strictly Grounded Generation](#strictly-grounded-generation)
+  - [Expert Persona Assignment / Domain Specific Knowledge](#expert-persona-assignment--domain-specific-knowledge)
+    - [Finances](#finances)
+    - [Legal document analysis](#legal-document-analysis)
+    - [Medical information retrieval](#medical-information-retrieval)
+    - [Customer support](#customer-support)
+    - [Technical documentation](#technical-documentation)
+  - [Structured Output Formatting](#structured-output-formatting)
+  - [Chain-of-Thought for Complex Questions](#chain-of-thought-for-complex-questions)
+  - [Conflicting Information](#conflicting-information)
+  - [Insufficient Information](#insufficient-information)
+  - [The Citation Imperative: Enforcing Verifiability](#the-citation-imperative-enforcing-verifiability)
+    - [Basic Citation Pattern](#basic-citation-pattern)
+    - [Advanced Citation with Confidence](#advanced-citation-with-confidence)
+  - [Complete RAG Prompt Template](#complete-rag-prompt-template)
+- [Advanced Techniques](#advanced-techniques)
+  - [Context Management](#context-management)
+    - [Document Relevance Filtering](#document-relevance-filtering)
+    - [Hierarchical Summarization](#hierarchical-summarization)
+  - [Testing and Iteration: Making Your Prompts Better](#testing-and-iteration-making-your-prompts-better)
+    - [A/B Testing Framework](#ab-testing-framework)
+    - [Prompt Version Control](#prompt-version-control)
 
 ## At a glance
 
+The patterns below summarize the major failure modes in RAG systems: unsupported claims, poor persona fit, inconsistent output, conflicting evidence, and weak source traceability. Use this overview to narrow down the pattern that best matches the kind of question, evidence, and risk profile in your system.
+
 | Pattern | Main problem addressed | Use it when |
 |---|---|---|
-| Source pattern | Main problem addressed | Use it when |
-|---|---|---|
-| Strictly Grounded Generation | Hallucination and unsupported claims | Answers must stay faithful to provided context |
-| Expert Persona Assignment | Generic domain response | Vocabulary, reasoning style, or depth should fit a domain |
-| Structured Output Formatting | Unparseable or inconsistent answers | A downstream application needs a consistent format |
-| Chain-of-Thought for Complex Questions | Multi-step reasoning is unclear | The question needs several reasoning steps |
-| Conflicting Information | Contradictory source material | Documents disagree |
-| Insufficient Information | Missing details are guessed or obscured | Documents only partially answer the question |
-| Basic Citation Pattern | Claims cannot be verified | Each factual claim should be traceable to source text |
-| Advanced Citation with Confidence | Evidence strength is not explicit | Direct statements, inferences, and uncertainty should be distinguished |
-| Legal Document Analysis | Contract qualifications or operative terms are missed | Analyzing contract documents |
-| Medical Information Retrieval | Evidence scope, date, or safety concerns are missed | Retrieving clinical information |
-| Customer Support | Responses lack empathy or actionable next steps | Answering customer questions |
-| Technical Documentation | Developer answers lack precision or useful structure | Helping developers use an API |
-| Document Relevance Filtering | Too many retrieved chunks reach generation | Broad retrieval needs narrowing before generation |
-| Hierarchical Summarization | Long documents exceed the context window | Finding relevant sections in a long document |
-| A/B Testing Framework | Prompt changes are not compared systematically | Comparing prompt versions on a test set |
-| Prompt Version Control | Prompt changes and quality trends are hard to track | Maintaining prompts over time |
-| Complete RAG Prompt Template | Multiple RAG requirements need one template | Combining the source's core principles and requirements |
+| Strictly Grounded Generation | Hallucination and unsupported claims | Answers must stay faithful to the provided document set |
+| Expert Persona Assignment | Generic or poorly matched answers | The response should reflect a specific domain, audience, or expertise |
+| Structured Output Formatting | Unparseable or inconsistent answers | A downstream system needs a predictable schema |
+| Chain-of-Thought for Complex Questions | Multi-step reasoning is unclear | The question requires decomposition, comparison, or synthesis |
+| Conflicting Information | Contradictory source material | The corpus includes multiple sources, versions, jurisdictions, or dates |
+| Insufficient Information | Missing details are guessed or obscured | The answer depends on evidence that is incomplete or absent |
+| Basic Citation Pattern | Claims cannot be verified | Each factual statement should be traceable to a source |
+| Advanced Citation with Confidence | Evidence strength is not explicit | You need to distinguish direct evidence, inference, and uncertainty |
+| Legal Document Analysis | Contract qualifications or operative terms are missed | Analyzing policy, contracts, or legal language |
+| Medical Information Retrieval | Evidence scope, date, or safety concerns are missed | Summarizing clinical literature or constraints in healthcare contexts |
+| Customer Support | Responses lack empathy or actionable follow-up | Answering user questions from docs, policies, or troubleshooting materials |
+| Technical Documentation | Developer answers lack precision or helpful structure | Explaining APIs, configuration, or product usage |
+| Document Relevance Filtering | Too many retrieved chunks reach generation | Retrieval is broad and context must be narrowed before generation |
+| Hierarchical Summarization | Long documents exceed the context window | Relevant sections must be identified inside large source material |
+| A/B Testing Framework | Prompt changes are not compared systematically | Evaluating alternate prompt versions on a benchmark set |
+| Prompt Version Control | Prompt changes and quality trends are hard to track | Maintaining and auditing prompts over time |
+| Complete RAG Prompt Template | Multiple RAG requirements need a single consistent prompt | Building a production-ready baseline prompt |
 
 ## Patterns 
 
